@@ -1,0 +1,2 @@
+# Conduct / 行为规范
+Be respectful and specific. No harassment, discrimination, threats, doxxing or publishing private data. Critique code/evidence, not people. Maintainers may remove harmful content or restrict participation proportionately and explain decisions privately. Use a confirmed private maintainer channel for concerns once configured; do not expose people in public Issues. Reporting channel remains a release gate.

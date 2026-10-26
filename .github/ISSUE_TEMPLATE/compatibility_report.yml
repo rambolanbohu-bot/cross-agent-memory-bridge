@@ -1,0 +1,25 @@
+name: Compatibility report
+description: Synthetic details only. Never include private data.
+title: "[compatibility_report] "
+body:
+  - type: markdown
+    attributes:
+      value: "No secrets or private profiles. 请勿提交私人资料。Security reports use private channel."
+  - type: textarea
+    id: summary
+    attributes:
+      label: Problem or proposal / 问题或建议
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: Actual agent, OS, Python and skill versions / 实测环境
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Synthetic reproduction, commands and sanitized evidence / 合成测试证据
+  - type: textarea
+    id: refresh
+    attributes:
+      label: Import, approval, refresh, rollback and limitations / 导入审批刷新回退限制

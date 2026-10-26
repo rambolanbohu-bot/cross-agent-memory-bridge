@@ -1,0 +1,2 @@
+# Third-party references and notices
+No vendored third-party implementation, Python runtime, images, fonts or model assets are included. Upstream specifications/docs are links, not copied implementations. checkout/setup-python are externally referenced CI actions, not bundled code. No inherited NOTICE requirement has been identified from the recorded source. Owner must confirm this inventory and preserve any notices for newly identified copied content. Project MIT is confirmed; this inventory does not replace any upstream license notice.

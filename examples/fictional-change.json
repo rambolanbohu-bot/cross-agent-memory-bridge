@@ -1,0 +1,74 @@
+{
+  "why": "Synthetic demonstration only",
+  "source": "synthetic",
+  "operations": [
+    {
+      "op": "upsert",
+      "record": {
+        "id": "fact-001",
+        "text": "Fictional Mira builds paper observatories.",
+        "source": "synthetic",
+        "created_at": "2026-10-26",
+        "verified_at": "2026-10-26",
+        "status": "confirmed",
+        "tags": [
+          "fictional"
+        ],
+        "visibility": "shareable",
+        "sensitive": false,
+        "version": 1
+      }
+    },
+    {
+      "op": "upsert",
+      "record": {
+        "id": "fact-002",
+        "text": "Fictional Mira prefers concise written summaries.",
+        "source": "synthetic",
+        "created_at": "2026-10-26",
+        "verified_at": "2026-10-26",
+        "status": "confirmed",
+        "tags": [
+          "fictional"
+        ],
+        "visibility": "shareable",
+        "sensitive": false,
+        "version": 1
+      }
+    },
+    {
+      "op": "upsert",
+      "record": {
+        "id": "fact-003",
+        "text": "Fictional Mira uses a weekly planning checklist.",
+        "source": "synthetic",
+        "created_at": "2026-10-26",
+        "verified_at": "2026-10-26",
+        "status": "confirmed",
+        "tags": [
+          "fictional"
+        ],
+        "visibility": "shareable",
+        "sensitive": false,
+        "version": 1
+      }
+    },
+    {
+      "op": "upsert",
+      "record": {
+        "id": "fact-004",
+        "text": "Fictional Mira may study ceramics next year.",
+        "source": "synthetic",
+        "created_at": "2026-10-26",
+        "verified_at": null,
+        "status": "pending",
+        "tags": [
+          "fictional"
+        ],
+        "visibility": "shareable",
+        "sensitive": false,
+        "version": 1
+      }
+    }
+  ]
+}

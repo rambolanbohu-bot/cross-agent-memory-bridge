@@ -1,0 +1,38 @@
+[
+  {
+    "path": "skills/cross-agent-memory-bridge/scripts/memory_bridge.py",
+    "category": "SENSITIVE_SEMANTICS",
+    "line_sha256": "872e464560b5692a919f32685836599cdf48a1e20ee0e0023733cba2a8e76c32",
+    "reason": "Reviewed detector vocabulary"
+  },
+  {
+    "path": "tests/test_bridge.py",
+    "category": "BANK_OR_ID",
+    "line_sha256": "62167e084b47d65b5a6b25ff05210744abf7013678aa544a01a125133846d381",
+    "reason": "Explicit synthetic negative-test fixture; not a live identifier"
+  },
+  {
+    "path": "tests/test_bridge.py",
+    "category": "SENSITIVE_SEMANTICS",
+    "line_sha256": "62167e084b47d65b5a6b25ff05210744abf7013678aa544a01a125133846d381",
+    "reason": "Explicit synthetic negative-test fixture; not a live identifier"
+  },
+  {
+    "path": "tests/test_schema.py",
+    "category": "BANK_OR_ID",
+    "line_sha256": "4bf0c35ec38bf5b0abf7ff6ba98f32cd49df873fd8215eaf386009aeb6b7669d",
+    "reason": "Explicit synthetic negative-test fixture; not a live identifier"
+  },
+  {
+    "path": "tests/test_security.py",
+    "category": "BANK_OR_ID",
+    "line_sha256": "ded364e6ed7ef72003234dea3af35e6bc9a1d25d55f622adb54e56845a1f8fc4",
+    "reason": "Explicit synthetic negative-test fixture; not a live identifier"
+  },
+  {
+    "path": "tests/test_security.py",
+    "category": "SENSITIVE_SEMANTICS",
+    "line_sha256": "ded364e6ed7ef72003234dea3af35e6bc9a1d25d55f622adb54e56845a1f8fc4",
+    "reason": "Explicit synthetic negative-test fixture; not a live identifier"
+  }
+]

@@ -1,0 +1,3 @@
+# v1.0.0 — DRAFT, NOT PUBLISHED
+Local-first Agent Skill profiles with explicit change/export approval, privacy checks, manual portable snapshots and version rollback. Python standard library; no required paid API/server. Models may charge separately.
+Windows local behavior and current-chat explicit Skill use evidenced separately from native host discovery. Other agents/OS untested; junction skipped; hosted CI NOT_RUN. No automatic all-AI synchronization. MIT confirmed: Copyright (c) 2026 Rambo. Maintainer and release authorization remain pending. Install only after code/hash/license review; retain prior reviewed packages for rollback.
