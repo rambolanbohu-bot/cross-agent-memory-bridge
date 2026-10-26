@@ -107,26 +107,41 @@ def check(root):
     report=privacy_gate(files,b,exceptions)
     return {'status':'PASS','files_checked':len(files),'privacy':report,'official_skills_ref':'NOT_RUN','license':'MIT','copyright_holder':'Rambo','license_status':'MIT_CONFIRMED','remote_ci':'NOT_RUN'}
 
-def make_archive(destination,prefix,payload,kind):
+def source_commit(root):
+    try:
+        import subprocess
+        sha_value=subprocess.check_output(['git','-C',str(root),'rev-parse','HEAD'],text=True).strip()
+        status=subprocess.check_output(['git','-C',str(root),'status','--porcelain'],text=True)
+    except (OSError,subprocess.CalledProcessError) as e: raise ReleaseError('Git source proof unavailable') from e
+    require(re.fullmatch(r'[0-9a-f]{40}',sha_value) is not None,'Source commit is not a full SHA')
+    require(not status,'Source checkout has uncommitted changes')
+    return sha_value
+
+def make_archive(destination,prefix,payload,kind,mode='candidate',commit=None):
     entries=[{'path':n,'bytes':len(d),'sha256':sha(d)} for n,d in sorted(payload.items())]
-    manifest=encoded({'version':VERSION,'kind':kind,'license_status':'MIT_CONFIRMED','license':'MIT','copyright_holder':'Rambo','copyright_year':2026,'publication_authorized':False,'files':entries,'self_exclusions':sorted(SPECIAL)})
+    manifest_data={'version':VERSION,'kind':kind,'license_status':'MIT_CONFIRMED','license':'MIT','copyright_holder':'Rambo','copyright_year':2026,'files':entries,'self_exclusions':sorted(SPECIAL)}
+    if mode=='candidate': manifest_data['publication_authorized']=False
+    else: manifest_data.update({'manifest_schema':'release-1','source_commit':commit})
+    manifest=encoded(manifest_data)
     content=dict(payload);content['PACKAGE_MANIFEST.json']=manifest;content['PACKAGE_MANIFEST.sha256']=(sha(manifest)+'  PACKAGE_MANIFEST.json\n').encode()
     with zipfile.ZipFile(destination,'w',zipfile.ZIP_DEFLATED) as z:
         for name,data in sorted(content.items()):
             info=zipfile.ZipInfo(prefix+'/'+name,date_time=(2026,10,26,0,0,0));info.create_system=3;info.external_attr=(stat.S_IFREG|0o644)<<16;info.compress_type=zipfile.ZIP_DEFLATED;z.writestr(info,data)
     return {'file':Path(destination).name,'sha256':sha(Path(destination).read_bytes()),'members':len(content)}
 
-def build(root,dist):
+def build(root,dist,mode='candidate'):
     root=Path(root).absolute();dist=Path(dist).absolute();check(root)
+    commit=source_commit(root) if mode=='release' else None
     require(not dist.exists() or dist.is_dir(),'Dist not directory')
     dist.mkdir(parents=True,exist_ok=True)
     source=collect(root);source={n:d for n,d in source.items() if n not in SPECIAL}
-    names=['cross-agent-memory-bridge-v1.0.0-source-candidate.zip','cross-agent-memory-bridge-v1.0.0-install-candidate.zip']
+    names=([ 'cross-agent-memory-bridge-v1.0.0-source.zip','cross-agent-memory-bridge-v1.0.0-install.zip'] if mode=='release' else ['cross-agent-memory-bridge-v1.0.0-source-candidate.zip','cross-agent-memory-bridge-v1.0.0-install-candidate.zip'])
     require(not any((dist/n).exists() for n in [*names,'SHA256SUMS.txt']),'Never overwrite an existing candidate distribution')
     skillprefix='skills/cross-agent-memory-bridge/';skill={n[len(skillprefix):]:d for n,d in source.items() if n.startswith(skillprefix)}
-    outputs=[make_archive(dist/names[0],'cross-agent-memory-bridge',source,'source-candidate'),make_archive(dist/names[1],'cross-agent-memory-bridge',skill,'install-candidate')]
+    kinds=('source','install') if mode=='release' else ('source-candidate','install-candidate')
+    outputs=[make_archive(dist/names[0],'cross-agent-memory-bridge',source,kinds[0],mode,commit),make_archive(dist/names[1],'cross-agent-memory-bridge',skill,kinds[1],mode,commit)]
     (dist/'SHA256SUMS.txt').write_text(''.join(x['sha256']+'  '+x['file']+'\n' for x in outputs),encoding='utf-8')
-    for x in outputs:verify(dist/x['file'])
+    for x in outputs:verify(dist/x['file'],mode)
     return {'status':'PASS','archives':outputs,'automatic_publish':False}
 
 def checked_members(archive):
@@ -147,10 +162,12 @@ def checked_members(archive):
         # Each approved bounded member is read once; ZipFile.read checks its CRC.
         return {rel:z.read(i) for rel,i in planned}
 
-def verify(archive):
+def verify(archive,mode='candidate'):
     files=checked_members(archive);require(SPECIAL<=files.keys(),'Missing integrity metadata')
     manifest=files['PACKAGE_MANIFEST.json'];require(files['PACKAGE_MANIFEST.sha256'].decode().split()[0]==sha(manifest),'Manifest hash mismatch')
-    m=json.loads(manifest);require(m['version']==VERSION and m['license_status']=='MIT_CONFIRMED' and m.get('license')=='MIT' and m.get('copyright_holder')=='Rambo' and m.get('copyright_year')==2026 and m.get('publication_authorized') is False,'Unexpected candidate version/status')
+    m=json.loads(manifest);require(m['version']==VERSION and m['license_status']=='MIT_CONFIRMED' and m.get('license')=='MIT' and m.get('copyright_holder')=='Rambo' and m.get('copyright_year')==2026,'Unexpected package version/status')
+    if mode=='candidate': require(m.get('publication_authorized') is False and 'source_commit' not in m,'Unexpected candidate version/status')
+    else: require(m.get('manifest_schema')=='release-1' and re.fullmatch(r'[0-9a-f]{40}',m.get('source_commit','')) and 'publication_authorized' not in m,'Unexpected release manifest')
     expected={x['path']:x for x in m['files']};require(len(expected)==len(m['files']),'Duplicate manifest record')
     require(set(files)==set(expected)|SPECIAL,'Unexpected/missing package members')
     for n,item in expected.items():require(len(files[n])==item['bytes'] and sha(files[n])==item['sha256'],'Member integrity failure: '+n)
@@ -170,11 +187,11 @@ def extract_new(archive,destination):
 def main():
     p=argparse.ArgumentParser();s=p.add_subparsers(dest='command',required=True)
     c=s.add_parser('check');c.add_argument('--root',default='.')
-    c=s.add_parser('build');c.add_argument('--root',default='.');c.add_argument('--dist',required=True)
-    c=s.add_parser('verify');c.add_argument('--archive',required=True)
+    c=s.add_parser('build');c.add_argument('--root',default='.');c.add_argument('--dist',required=True);c.add_argument('--mode',choices=['candidate','release'],default='candidate')
+    c=s.add_parser('verify');c.add_argument('--archive',required=True);c.add_argument('--mode',choices=['candidate','release'],default='candidate')
     a=p.parse_args()
     try:
-        result=check(a.root) if a.command=='check' else build(a.root,a.dist) if a.command=='build' else verify(a.archive)
+        result=check(a.root) if a.command=='check' else build(a.root,a.dist,a.mode) if a.command=='build' else verify(a.archive,a.mode)
         print(json.dumps(result,ensure_ascii=False,indent=2));return 0
     except (ReleaseError,OSError,ValueError,KeyError,zipfile.BadZipFile) as e:
         print(json.dumps({'status':'FAIL','message':str(e)},ensure_ascii=False));return 2
