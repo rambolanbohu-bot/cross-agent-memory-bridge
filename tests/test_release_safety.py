@@ -52,6 +52,28 @@ class ReleaseSafety(unittest.TestCase):
   d=self.p/'dist';d.mkdir();f=d/'cross-agent-memory-bridge-v1.0.0-source-candidate.zip';f.write_bytes(b'sentinel')
   with self.assertRaises(r.ReleaseError):r.build(ROOT,d)
   self.assertEqual(f.read_bytes(),b'sentinel')
+ def test_release_mode_manifest_and_archives(self):
+  d=self.p/'release';commit='0'*40
+  with patch.object(r,'source_commit',return_value=commit):result=r.build(ROOT,d,mode='release')
+  self.assertEqual([x['file'] for x in result['archives']],['cross-agent-memory-bridge-v1.0.0-source.zip','cross-agent-memory-bridge-v1.0.0-install.zip'])
+  with zipfile.ZipFile(d/result['archives'][0]['file']) as z:
+   m=json.loads(z.read('cross-agent-memory-bridge/PACKAGE_MANIFEST.json'))
+  self.assertEqual(m['manifest_schema'],'release-1');self.assertEqual(m['source_commit'],commit);self.assertNotIn('publication_authorized',m)
+  self.assertEqual(r.verify(d/'cross-agent-memory-bridge-v1.0.0-source.zip',mode='release')['status'],'PASS')
+ def test_release_rejects_dirty_workspace(self):
+  marker=ROOT/'release-test-dirty.tmp';marker.write_text('synthetic',encoding='utf-8');self.addCleanup(lambda:marker.unlink(missing_ok=True))
+  with self.assertRaises(r.ReleaseError):r.build(ROOT,self.p/'dirty-release',mode='release')
+ def test_release_rejects_unverifiable_commit(self):
+  with patch.object(r,'source_commit',side_effect=r.ReleaseError('Source commit is not a full SHA')):
+   with self.assertRaises(r.ReleaseError):r.build(ROOT,self.p/'bad-commit',mode='release')
+ def test_release_tamper_refused(self):
+  d=self.p/'release-tamper'
+  with patch.object(r,'source_commit',return_value='1'*40):r.build(ROOT,d,mode='release')
+  p=d/'cross-agent-memory-bridge-v1.0.0-source.zip';files=r.checked_members(p);files['LICENSE']+=b' tampered';bad=d/'tampered.zip'
+  with zipfile.ZipFile(bad,'w') as z:
+   for n,data in files.items():z.writestr('cross-agent-memory-bridge/'+n,data)
+  p=bad
+  with self.assertRaises((r.ReleaseError,zipfile.BadZipFile)):r.verify(p,mode='release')
  def test_normalized_duplicate_refused(self):
   with self.assertRaises(r.ReleaseError):r.checked_members(self.bad(['cross-agent-memory-bridge/a.txt','cross-agent-memory-bridge/./a.txt']))
  def test_oversize_preflight_before_any_decompression(self):
