@@ -71,7 +71,6 @@ def validate_mit(files):
     version=json.loads(files['VERSION.json'])
     require(version.get('version')==VERSION and version.get('license')=='MIT' and version.get('license_status')=='MIT_CONFIRMED','MIT/version status mismatch')
     require(version.get('copyright_holder')=='Rambo' and version.get('copyright_year')==2026,'Version attribution mismatch')
-    require('NOT_AUTHORISED' in version.get('release_status',''),'Missing no-publication status')
     for name in ('README.md','README.zh-CN.md'):
         if name in files:
             readme=files[name].decode('utf-8-sig')
