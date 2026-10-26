@@ -5,5 +5,7 @@
   "license_status": "MIT_CONFIRMED",
   "copyright_holder": "Rambo",
   "copyright_year": 2026,
-  "release_status": "LOCAL_CANDIDATE_PUBLIC_RELEASE_NOT_AUTHORISED"
+  "repository_visibility": "PUBLIC",
+  "release_status": "PUBLIC_REPOSITORY_RELEASE_NOT_AUTHORISED",
+  "github_release": "NOT_PUBLISHED"
 }
