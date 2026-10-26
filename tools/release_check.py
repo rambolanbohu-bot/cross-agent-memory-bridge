@@ -138,7 +138,8 @@ def build(root,dist,mode='candidate'):
     names=([ 'cross-agent-memory-bridge-v1.0.0-source.zip','cross-agent-memory-bridge-v1.0.0-install.zip'] if mode=='release' else ['cross-agent-memory-bridge-v1.0.0-source-candidate.zip','cross-agent-memory-bridge-v1.0.0-install-candidate.zip'])
     require(not any((dist/n).exists() for n in [*names,'SHA256SUMS.txt']),'Never overwrite an existing candidate distribution')
     skillprefix='skills/cross-agent-memory-bridge/';skill={n[len(skillprefix):]:d for n,d in source.items() if n.startswith(skillprefix)}
-    outputs=[make_archive(dist/names[0],'cross-agent-memory-bridge',source,'source',mode,commit),make_archive(dist/names[1],'cross-agent-memory-bridge',skill,'install',mode,commit)]
+    kinds=('source','install') if mode=='release' else ('source-candidate','install-candidate')
+    outputs=[make_archive(dist/names[0],'cross-agent-memory-bridge',source,kinds[0],mode,commit),make_archive(dist/names[1],'cross-agent-memory-bridge',skill,kinds[1],mode,commit)]
     (dist/'SHA256SUMS.txt').write_text(''.join(x['sha256']+'  '+x['file']+'\n' for x in outputs),encoding='utf-8')
     for x in outputs:verify(dist/x['file'],mode)
     return {'status':'PASS','archives':outputs,'automatic_publish':False}

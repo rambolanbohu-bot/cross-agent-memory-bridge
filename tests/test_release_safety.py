@@ -17,7 +17,12 @@ class ReleaseSafety(unittest.TestCase):
     if link:i.external_attr=(stat.S_IFLNK|0o777)<<16
     z.writestr(i,'synthetic')
   return p
- def test_candidate_check(self):self.assertEqual(r.check(ROOT)['status'],'PASS')
+ def test_candidate_check(self):
+  self.assertEqual(r.check(ROOT)['status'],'PASS')
+  d=self.p/'candidate';result=r.build(ROOT,d,mode='candidate')
+  for item,expected in zip(result['archives'],('source-candidate','install-candidate')):
+   with zipfile.ZipFile(d/item['file']) as z:m=json.loads(z.read('cross-agent-memory-bridge/PACKAGE_MANIFEST.json'))
+   self.assertEqual(m['kind'],expected)
  def test_unreviewed_secret_refused(self):
   files=r.collect(ROOT);files['new.txt']=('api_key = '+'SYNTHETIC'*6).encode()
   with self.assertRaises(r.ReleaseError):r.privacy_gate(files,r.bridge(ROOT),json.loads(files['tools/privacy-expected-findings.json']))
