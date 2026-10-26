@@ -1,0 +1,16 @@
+/work/
+/dist/
+/release-prep-v1/
+__pycache__/
+*.pyc
+*.local.json
+*.local.md
+.env
+.env.*
+auth.json
+credentials.json
+/my-private-ai-memory/
+/approvals/
+/profiles/
+/vaults/
+
